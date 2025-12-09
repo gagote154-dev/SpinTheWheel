@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spin The Wheel - Probability Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .logo span {
+            color: #e74c3c;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 20px;
+        }
+
+        .tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .my-wheels-badge {
+            background-color: #3498db;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+
+        /* Main Game Area */
+        .main-content {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .wheel-section {
+            flex: 2;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .controls-section {
+            flex: 1;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        /* Wheel Styling - Like Screenshot */
+        .wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 0 auto 30px;
+        }
+
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .spin-button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spin-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 22px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+
+        .spin-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.5);
+        }
+
+        .spin-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: #e74c3c;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            z-index: 10;
+        }
+
+        /* Color Controls */
+        .color-controls {
+            margin-bottom: 25px;
+        }
+
+        .color-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .color-item:hover {
+            background: #e9ecef;
+        }
+
+        .color-preview {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 15px;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .color-name {
+            flex-grow: 1;
+            font-weight: 500;
+        }
+
+        .color-count {
+            background: #3498db;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .color-count.red-count {
+            background: #e74c3c;
+        }
+
+        /* Probability Controls */
+        .probability-controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .input-label {
+            width: 150px;
+            font-weight: 500;
+        }
+
+        .probability-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fraction-input {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .fraction-input input {
+            width: 60px;
+            padding: 8px;
+            border: none;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .fraction-input input:focus {
+            outline: none;
+        }
+
+        .equals {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0 10px;
+        }
+
+        .decimal-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Game Info */
+        .game-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Result Display */
+        .result-display {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        /* Game Log */
+        .game-log-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .log-entries {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-entry:nth-child(odd) {
+            background: #f8f9fa;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 30px;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .wheel-container {
+                width: 350px;
+                height: 350px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .wheel-container {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .nav-tabs {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">Spin<span>The</span>Wheel</div>
+            <div class="nav-tabs">
+                <div class="tab">F.A.Q.</div>
+                <div class="tab">Wheels</div>
+                <div class="tab active">
+                    My Wheels <span class="my-wheels-badge">2</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left: Wheel Section -->
+            <div class="wheel-section">
+                <h2 class="section-title">Wheel of Colors</h2>
+                <div class="wheel-container">
+                    <canvas id="wheelCanvas" width="400" height="400"></canvas>
+                    <div class="wheel-pointer"></div>
+                </div>
+                <div class="spin-button-container">
+                    <button class="spin-btn" id="spinButton">SPIN</button>
+                </div>
+            </div>
+
+            <!-- Right: Controls Section -->
+            <div class="controls-section">
+                <h2 class="section-title">Game Controls</h2>
+                
+                <!-- Color Controls -->
+                <div class="color-controls">
+                    <div class="color-item">
+                        <div class="color-preview" style="background-color: #e74c3c;"></div>
+                        <div class="color-name">Red</div>
+                        <div class="color-count red-count" id="redCount">2</div>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-preview" style="background-color: #3498db;"></div>
+                        <div class="color-name">Blue</div>
+                        <div class="color-count" id="blueCount">1</div>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-preview" style="background-color: #2ecc71;"></div>
+                        <div class="color-name">Green</div>
+                        <div class="color-count" id="greenCount">1</div>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-preview" style="background-color: #f1c40f;"></div>
+                        <div class="color-name">Yellow</div>
+                        <div class="color-count" id="yellowCount">1</div>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-preview" style="background-color: #e67e22;"></div>
+                        <div class="color-name">Orange</div>
+                        <div class="color-count" id="orangeCount">1</div>
+                    </div>
+                    <div class="color-item">
+                        <div class="color-preview" style="background-color: #9b59b6;"></div>
+                        <div class="color-name">Purple</div>
+                        <div class="color-count" id="purpleCount">1</div>
+                    </div>
+                </div>
+
+                <!-- Probability Controls -->
+                <div class="probability-controls">
+                    <div class="input-group">
+                        <div class="input-label">Selected Color:</div>
+                        <div class="color-name" id="selectedColorDisplay">None</div>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-label">Actual Probability:</div>
+                        <div class="decimal-value" id="actualProbability">2/6 = 0.333</div>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-label">Your Guess:</div>
+                        <div class="probability-input">
+                            <div class="fraction-input">
+                                <input type="number" id="numerator" value="1" min="1" max="6">
+                                <span>/</span>
+                                <input type="number" id="denominator" value="6" min="1" max="6">
+                            </div>
+                            <span class="equals">=</span>
+                            <span class="decimal-value" id="guessProbability">0.167</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Info -->
+                <div class="game-info">
+                    <div class="info-box">
+                        <div class="info-label">SCORE</div>
+                        <div class="info-value" id="scoreDisplay">0</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">ROUND</div>
+                        <div class="info-value" id="roundDisplay">1/5</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">SPINS</div>
+                        <div class="info-value" id="spinsDisplay">0</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">TRIES LEFT</div>
+                        <div class="info-value" id="triesLeft">3</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <button class="spin-btn" style="width: 100%; padding: 15px; font-size: 18px; margin-bottom: 15px;" id="selectColorBtn">
+                    SELECT COLOR
+                </button>
+                <button class="spin-btn" style="width: 100%; padding: 15px; font-size: 18px; background: linear-gradient(135deg, #2ecc71, #27ae60);" id="nextRoundBtn" disabled>
+                    NEXT ROUND
+                </button>
+
+                <!-- Result Display -->
+                <div class="result-display" id="resultDisplay">
+                    Select a color and enter your probability guess
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Log -->
+        <div class="game-log-section">
+            <h2 class="section-title">Game History</h2>
+            <div class="log-entries" id="gameLog">
+                <!-- Log entries will appear here -->
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Spin The Wheel - Probability Challenge | Discrete Mathematics | Group 6 Project</p>
+            <p>Wheel has 6 sections: 2 Red, 1 Blue, 1 Green, 1 Yellow, 1 Orange, 1 Purple</p>
+        </div>
+    </div>
+
+    <script>
+        // Game Configuration
+        const wheelConfig = {
+            sections: [
+                { color: '#e74c3c', label: 'Red', count: 2, probability: 2/6 },
+                { color: '#3498db', label: 'Blue', count: 1, probability: 1/6 },
+                { color: '#2ecc71', label: 'Green', count: 1, probability: 1/6 },
+                { color: '#f1c40f', label: 'Yellow', count: 1, probability: 1/6 },
+                { color: '#e67e22', label: 'Orange', count: 1, probability: 1/6 },
+                { color: '#9b59b6', label: 'Purple', count: 1, probability: 1/6 }
+            ],
+            totalSections: 6
+        };
+
+        // Game State
+        const gameState = {
+            score: 0,
+            round: 1,
+            spins: 0,
+            triesLeft: 3,
+            selectedColor: null,
+            isSpinning: false
+        };
+
+        // DOM Elements
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const spinButton = document.getElementById('spinButton');
+        const selectColorBtn = document.getElementById('selectColorBtn');
+        const nextRoundBtn = document.getElementById('nextRoundBtn');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const gameLog = document.getElementById('gameLog');
+        
+        // Display Elements
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const roundDisplay = document.getElementById('roundDisplay');
+        const spinsDisplay = document.getElementById('spinsDisplay');
+        const triesLeftDisplay = document.getElementById('triesLeft');
+        const selectedColorDisplay = document.getElementById('selectedColorDisplay');
+        const actualProbability = document.getElementById('actualProbability');
+        const guessProbability = document.getElementById('guessProbability');
+        
+        // Input Elements
+        const numeratorInput = document.getElementById('numerator');
+        const denominatorInput = document.getElementById('denominator');
+
+        // Initialize Wheel
+        function drawWheel() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 20;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            let startAngle = 0;
+            const anglePerSection = (2 * Math.PI) / wheelConfig.totalSections;
+            
+            // Draw sections
+            wheelConfig.sections.forEach((section, index) => {
+                for (let i = 0; i < section.count; i++) {
+                    const endAngle = startAngle + anglePerSection;
+                    
+                    // Draw section
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                    ctx.closePath();
+                    ctx.fillStyle = section.color;
+                    ctx.fill();
+                    
+                    // Draw border
+                    ctx.strokeStyle = '#2c3e50';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    // Draw label
+                    const midAngle = startAngle + anglePerSection / 2;
+                    const labelRadius = radius * 0.7;
+                    const labelX = centerX + Math.cos(midAngle) * labelRadius;
+                    const labelY = centerY + Math.sin(midAngle) * labelRadius;
+                    
+                    ctx.save();
+                    ctx.translate(labelX, labelY);
+                    ctx.rotate(midAngle + Math.PI / 2);
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(section.label.charAt(0), 0, 0);
+                    ctx.restore();
+                    
+                    startAngle = endAngle;
+                }
+            });
+            
+            // Draw center circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
+            ctx.fillStyle = '#2c3e50';
+            ctx.fill();
+            ctx.strokeStyle = '#ecf0f1';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        // Update Probability Display
+        function updateProbabilityDisplay() {
+            if (gameState.selectedColor) {
+                const section = wheelConfig.sections.find(s => s.label.toLowerCase() === gameState.selectedColor);
+                if (section) {
+                    actualProbability.textContent = `${section.count}/${wheelConfig.totalSections} = ${section.probability.toFixed(3)}`;
+                    selectedColorDisplay.textContent = section.label;
+                    selectedColorDisplay.style.color = section.color;
+                    selectedColorDisplay.style.fontWeight = 'bold';
+                    
+                    // Set suggested probability
+                    numeratorInput.value = section.count;
+                    denominatorInput.value = wheelConfig.totalSections;
+                    updateGuessProbability();
+                }
+            } else {
+                actualProbability.textContent = '2/6 = 0.333';
+                selectedColorDisplay.textContent = 'None';
+                selectedColorDisplay.style.color = '';
+                selectedColorDisplay.style.fontWeight = '';
+            }
+        }
+
+        // Update Guess Probability
+        function updateGuessProbability() {
+            const numerator = parseInt(numeratorInput.value) || 1;
+            const denominator = parseInt(denominatorInput.value) || 6;
+            const probability = numerator / denominator;
+            guessProbability.textContent = probability.toFixed(3);
+        }
+
+        // Color Selection
+        selectColorBtn.addEventListener('click', () => {
+            // Create color selection modal
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                width: 300px;
+                text-align: center;
+            `;
+            
+            modalContent.innerHTML = `
+                <h3 style="margin-bottom: 20px; color: #2c3e50;">Select a Color</h3>
+                ${wheelConfig.sections.map(section => `
+                    <div class="color-item" style="margin-bottom: 10px; cursor: pointer;" data-color="${section.label.toLowerCase()}">
+                        <div class="color-preview" style="display: inline-block; vertical-align: middle; margin-right: 10px; background-color: ${section.color};"></div>
+                        <span style="font-weight: 500;">${section.label}</span>
+                        <span style="margin-left: 10px; background: ${section.label === 'Red' ? '#e74c3c' : '#3498db'}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px;">
+                            P = ${section.count}/${wheelConfig.totalSections}
+                        </span>
+                    </div>
+                `).join('')}
+                <button id="closeModal" style="margin-top: 20px; padding: 10px 20px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Cancel
+                </button>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Add click handlers
+            modalContent.querySelectorAll('.color-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const color = e.currentTarget.dataset.color;
+                    gameState.selectedColor = color;
+                    updateProbabilityDisplay();
+                    spinButton.disabled = false;
+                    modal.remove();
+                });
+            });
+            
+            document.getElementById('closeModal').addEventListener('click', () => {
+                modal.remove();
+            });
+        });
+
+        // Spin Wheel Animation
+        function spinWheel() {
+            if (gameState.isSpinning || !gameState.selectedColor) return;
+            
+            gameState.isSpinning = true;
+            gameState.spins++;
+            gameState.triesLeft--;
+            
+            spinButton.disabled = true;
+            resultDisplay.textContent = "Spinning...";
+            resultDisplay.style.background = "#3498db";
+            
+            // Animation
+            let rotation = 0;
+            const spins = 5 + Math.random() * 3; // 5-8 full spins
+            const totalRotation = spins * 2 * Math.PI;
+            const duration = 3000; // 3 seconds
+            const startTime = Date.now();
+            
+            function animate() {
+                const currentTime = Date.now();
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                rotation = totalRotation * easeOut;
+                
+                // Clear and redraw
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(rotation);
+                ctx.translate(-canvas.width / 2, -canvas.height / 2);
+                drawWheel();
+                ctx.restore();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    finishSpin();
+                }
+            }
+            
+            requestAnimationFrame(animate);
+        }
+
+        // Finish Spin and Calculate Result
+        function finishSpin() {
+            const selectedSection = wheelConfig.sections.find(s => s.label.toLowerCase() === gameState.selectedColor);
+            const actualProb = selectedSection ? selectedSection.probability : 0;
+            
+            const numerator = parseInt(numeratorInput.value) || 1;
+            const denominator = parseInt(denominatorInput.value) || 6;
+            const guessedProb = numerator / denominator;
+            
+            // Determine result (simulate random based on actual probability)
+            const randomValue = Math.random();
+            const landedOnSelected = randomValue < actualProb;
+            
+            let points = 0;
+            let resultMessage = '';
+            
+            if (landedOnSelected) {
+                points = 2;
+                resultMessage = `🎉 Landed on ${selectedSection.label}! +2 points`;
+                resultDisplay.style.background = "#2ecc71";
+            } else if (Math.abs(guessedProb - actualProb) < 0.001) {
+                points = 1;
+                resultMessage = `✓ Correct probability! +1 point`;
+                resultDisplay.style.background = "#f1c40f";
+            } else {
+                resultMessage = `✗ Try again!`;
+                resultDisplay.style.background = "#e74c3c";
+            }
+            
+            gameState.score += points;
+            
+            // Update displays
+            scoreDisplay.textContent = gameState.score;
+            spinsDisplay.textContent = gameState.spins;
+            triesLeftDisplay.textContent = gameState.triesLeft;
+            resultDisplay.innerHTML = resultMessage;
+            
+            // Add to game log
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <div>
+                    <span style="color: ${selectedSection.color}; font-weight: bold;">${selectedSection.label}</span>
+                    <span style="color: #7f8c8d; margin-left: 10px;">Guess: ${numerator}/${denominator}</span>
+                </div>
+                <div style="color: ${points > 0 ? (points === 2 ? '#2ecc71' : '#f1c40f') : '#e74c3c'}; font-weight: bold;">
+                    ${points > 0 ? '+' + points : points} pts
+                </div>
+            `;
+            gameLog.prepend(logEntry);
+            
+            gameState.isSpinning = false;
+            
+            // Check if round is complete
+            if (gameState.triesLeft <= 0) {
+                nextRoundBtn.disabled = false;
+                spinButton.disabled = true;
+                resultDisplay.innerHTML += `<br><small>Round ${gameState.round} complete!</small>`;
+            } else {
+                spinButton.disabled = false;
+            }
+        }
+
+        // Next Round
+        nextRoundBtn.addEventListener('click', () => {
+            if (gameState.round < 5) {
+                gameState.round++;
+                gameState.triesLeft = 3;
+                gameState.selectedColor = null;
+                
+                // Update displays
+                roundDisplay.textContent = `${gameState.round}/5`;
+                triesLeftDisplay.textContent = gameState.triesLeft;
+                updateProbabilityDisplay();
+                nextRoundBtn.disabled = true;
+                spinButton.disabled = false;
+                
+                resultDisplay.textContent = `Round ${gameState.round} - Select a color`;
+                resultDisplay.style.background = "#2c3e50";
+                
+                // Add round separator to log
+                const separator = document.createElement('div');
+                separator.className = 'log-entry';
+                separator.innerHTML = `<div style="text-align: center; color: #3498db; font-weight: bold; width: 100%;">--- ROUND ${gameState.round} ---</div>`;
+                gameLog.prepend(separator);
+            } else {
+                resultDisplay.innerHTML = `🎊 Game Complete! Final Score: ${gameState.score}`;
+                resultDisplay.style.background = "#9b59b6";
+                nextRoundBtn.disabled = true;
+                spinButton.disabled = true;
+                nextRoundBtn.textContent = "GAME OVER";
+            }
+        });
+
+        // Event Listeners
+        spinButton.addEventListener('click', spinWheel);
+        numeratorInput.addEventListener('input', updateGuessProbability);
+        denominatorInput.addEventListener('input', updateGuessProbability);
+
+        // Initialize
+        drawWheel();
+        updateProbabilityDisplay();
+        updateGuessProbability();
+        
+        // Add initial log entry
+        const initialLog = document.createElement('div');
+        initialLog.className = 'log-entry';
+        initialLog.innerHTML = `<div style="color: #3498db; text-align: center; width: 100%;">Game Started - Round 1</div>`;
+        gameLog.appendChild(initialLog);
+    </script>
+</body>
+</html>
